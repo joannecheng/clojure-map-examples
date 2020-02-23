@@ -1,28 +1,23 @@
 # clojure-map-examples
 
-FIXME: description
+Examples from "Making Geographic Maps with Clojure" talk.
 
 ## Installation
 
-Download from http://example.com/FIXME.
+* Install [GDAL](https://gdal.org/download.html)
+* Install [R](https://www.r-project.org/)
+* Install required R packages in "packages_to_install.R"
+
 
 ## Usage
 
-FIXME: explanation
+* After you install R, run `rserve_commands.R`
+* Start the REPL and start running `src/clojure_map_examples/shapefile_example.clj` or `src/clojure_map_examples/denver_berlin.clj` line by line.
 
-    $ java -jar clojure-map-examples-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
 
 ### Bugs
 
-...
+Please contact me ([@joannecheng](https://twitter.com/joannecheng)) if you have any issues with this project.
 
 ### Any Other Sections
 ### That You Think
