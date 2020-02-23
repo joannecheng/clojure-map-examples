@@ -11,3 +11,4 @@ devtools::install_github("tylermorganwall/rayshader")
 
 install.packages("svglite")
 install.packages("geosphere")
+install.packages("av")

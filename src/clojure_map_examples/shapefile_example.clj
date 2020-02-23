@@ -9,59 +9,71 @@
                              coord_map ;; set map projection
                              ggsave ;; save plot
                              geom_sf geom_polygon]] ;; plotting data
+           '[base :refer [$ summary r!=]]
            '[sf :refer [st_bbox st_crop st_read]])
-
-
-;; TODO move to resources
-(def data-location  "/home/joannecheng/dev/viz/clojure-rayshader/resources/data_files")
-(def output-location (str (System/getProperty "user.dir") "/resources/output"))
-
-(def lakes (-> data-location
-             (str "/lakes_in_colorado_shp/geo_export_1d691995-66a3-4b66-8aa2-4ae94088e589.shp")
-             st_read))
-
-(def colorado-base (map_data "state" :region "Colorado"))
-(def germany-base (map_data "world" :region "Germany"))
-
-;; Plot Germany
-(def germany-plot
-  (-> (ggplot)
-      (r/r+ (geom_polygon :data germany-base (aes :x 'long :y 'lat :group 'group)
-                          :fill "#000000")
-            (coord_map)
-            (theme_void))))
-
-;; Save to PDF
-(ggsave :file (str output-location "/germany-test.pdf")
-        :plot germany-plot)
-
-;; TODO filter lakes with names
-(defn lakes-with-names [lakes]
-  )
-
-(def lake-blue "#3e98ed")
-(def grey "#555555")
-(def map-base "#f6f6f5")
-
-;; Plot all lakes
-(-> (ggplot)
-    (r/r+ (geom_polygon :data colorado-base (aes :x 'long :y 'lat :group 'group)
-                        :color "#000000" :fill map-base :size 0.2)
-          (geom_sf :data lakes :size 0.2 :color lake-blue :fill lake-blue (aes :geometry 'geometry))
-          ;;geom_sf(data=lakes_with_names, aes(geometry=geometry), color=NA, fill="#2c7bb6") +
-          (coord_sf)
-          (theme_void)))
-
-;; TODO Plot lakes with names, without names
-;; TODO Plot lakes in order by size, filter by water with the name "lake"
-
-;; DONE Filter by Area
 
 (defn read-shapefile-resource [sf-resource]
   (-> sf-resource
       io/file
       str
       st_read))
+
+(def output-location (str (System/getProperty "user.dir") "/resources/output"))
+
+(def lakes (-> "data_files/lakes/geo_export_1d691995-66a3-4b66-8aa2-4ae94088e589.shp"
+               io/resource
+               read-shapefile-resource))
+
+;; Quick summary of lakes
+(summary lakes)
+;; Get a column of a dataframe
+($ lakes 'name)
+;; turn it into a clojure list for easier inspection
+(r/r->clj ($ lakes 'name))
+
+(def colorado-base (map_data "state" :region "Colorado"))
+(def germany-base (map_data "world" :region "Germany"))
+
+;; Plot Germany
+(-> (ggplot)
+    (r/r+ (geom_polygon :data germany-base (aes :x 'long :y 'lat :group 'group)
+                        :fill "#add8e6" :color "#000000" :size 0.4)
+          (coord_map) ;; projection
+          (theme_void)))
+
+;; Plot Colorado
+(-> (ggplot)
+    (r/r+ (geom_polygon :data colorado-base (aes :x 'long :y 'lat :group 'group)
+                        :fill "#eeeeee" :color "#000000" :size 0.2)
+          (coord_map)
+          (theme_void)))
+
+;; TODO filter lakes with names
+(def lakes-with-names (lakes))
+
+(def lake-blue "#3e98ed")
+(def grey "#555555")
+(def map-base "#f6f6f5")
+
+;; Plot all lakes
+(defn colorado-lakes []
+  (-> (ggplot)
+      (r/r+ (geom_polygon :data colorado-base (aes :x 'long :y 'lat :group 'group)
+                          :color "#000000" :fill map-base :size 0.2)
+            (geom_sf :data lakes :size 0.1 :color "#111111" :fill lake-blue (aes :geometry 'geometry))
+            ;;geom_sf(data=lakes_with_names, aes(geometry=geometry), color=NA, fill="#2c7bb6") +
+            (coord_sf)
+            (theme_void))))
+(colorado-lakes)
+
+;; Save to file
+(ggsave :plot (colorado-lakes)
+        :file (str output-location "/colorado-lakes-output.png"))
+
+;; TODO Plot lakes with names, without names
+;; TODO Plot lakes in order by size, filter by water with the name "lake"
+
+;; DONE Filter by Area
 
 ;; DONE Get RMNP shapefile
 (def rmnp-sf-file (io/resource "data_files/RMNP/Rocky_Mountain_National_Park__Boundary_Polygon.shp"))
@@ -86,34 +98,4 @@
           (theme_void)))
 
 ;; TODO STYLE THE SHIT OUT OF THIS STUPID MAP
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; RASTER EXAMPLES
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO: Pull out to separate file!
-
-(require-r '[rayshader :refer [raster_to_matrix  reduce_matrix_size sphere_shade plot_map]]
-           '[raster :refer [extract raster]])
-
-# These lines extract elevation values (in meters) from a raster file
-; DONE colorado_raster = raster::raster(paste(dloc, "/colorado_dem_clipped.tif", sep=""))
-; p <- st_centroid(lakes["geometry"])
-; lakes$elevation <- raster::extract(colorado_raster, p)
-
-;; Extract raster data
-(def colorado_dem
-  ;; This is a HACK - I need to wrap 'raster::raster' around a function because
-  ;; R keeps calling the wrong 'raster' and is unable to find a "default function"
-  ((r/r "function(f) raster(f)")
-   (str data-location "/colorado_dem_clipped.tif")))
-
-(def colorado-dem-matrix
-  (-> colorado_dem
-      (raster_to_matrix)
-      (reduce_matrix_size 0.5)))
-
-(-> colorado-dem-matrix
-    sphere_shade
-    plot_map)
-
 

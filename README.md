@@ -14,6 +14,9 @@ Examples from "Making Geographic Maps with Clojure" talk.
 * After you install R, run `rserve_commands.R`
 * Start the REPL and start running `src/clojure_map_examples/shapefile_example.clj` or `src/clojure_map_examples/denver_berlin.clj` line by line.
 
+## Data sources
+
+* Worldwide Elevation Raster files http://viewfinderpanoramas.org/dem3.html#nam
 
 ### Bugs
 
