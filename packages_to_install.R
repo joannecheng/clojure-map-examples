@@ -1,5 +1,5 @@
 install.packages("Rserve", "http://rforge.net")
-install.packages("ggplot2")
+install.packages("tidyverse")
 
 install.packages("sf")
 install.packages("maps")
