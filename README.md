@@ -12,7 +12,10 @@ Examples from "Making Geographic Maps with Clojure" talk.
 ## Usage
 
 * After you install R, run `rserve_commands.R`
-* Start the REPL and start running `src/clojure_map_examples/shapefile_example.clj` or `src/clojure_map_examples/denver_berlin.clj` line by line.
+* Start the REPL and start running `src/clojure_map_examples/shapefile_example.clj` or `raster_example.clj`
+
+## Other links
+* [Rayshader Intro](https://github.com/tylermorganwall/MusaMasterclass)
 
 ## Data sources
 

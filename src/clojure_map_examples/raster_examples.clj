@@ -13,6 +13,7 @@
                                plot_map plot_3d ;; plotting functions
                                add_shadow
                                add_water detect_water]]
+           '[base :refer [summary]]
            '[raster :refer [extract raster]])
 
 ;; http://viewfinderpanoramas.org/dem3.html#nam
@@ -31,17 +32,23 @@
 (def rmnp-dem-matrix
   (-> rmnp_dem
       (raster_to_matrix)
-      (reduce_matrix_size 0.5)))
+      #_(reduce_matrix_size 0.5)))
 
 ;; simple example
 (-> rmnp-dem-matrix
-    sphere_shade
+    (sphere_shade)
     plot_map)
 
 ;; 'add water'
 (-> rmnp-dem-matrix
     sphere_shade
-    (add_water (detect_water rmnp-dem-matrix) :color "steelblue")
+    (add_water (detect_water rmnp-dem-matrix :min_area 250) :color "steelblue")
+    plot_map)
+
+;; 'add water'
+(-> rmnp-dem-matrix
+    (sphere_shade :texture "imhof4")
+    (add_water (detect_water rmnp-dem-matrix :min_area 250) :color "steelblue")
     plot_map)
 
 ;; using lamb_shade
@@ -52,8 +59,8 @@
 ;; adding shadow
 (-> rmnp-dem-matrix
     sphere_shade
-    (add_shadow (lamb_shade rmnp-dem-matrix :zscale 33))
-    (add_shadow (ray_shade rmnp-dem-matrix :zscale 33 :sunaltiude 6 :lambert false) 0.3)
+    (add_shadow (ray_shade rmnp-dem-matrix :zscale 23 :sunaltitude 3 :lambert false) :max_darken 0.5)
+    (add_shadow (lamb_shade rmnp-dem-matrix :zscale 23 :sunaltitude 3) :max_darken 0.5)
     plot_map)
 
 ;; Render 3D
@@ -66,14 +73,14 @@
 (def ambientshadows (ambient_shade rmnp-dem-matrix))
 (-> rmnp-dem-matrix
     sphere_shade
-    (add_water (detect_water rmnp-dem-matrix) :color "steelblue")
+    (add_water (detect_water rmnp-dem-matrix :min_area 270) :color "steelblue")
     (add_shadow (ray_shade rmnp-dem-matrix :sunangle 200 :sunaltitude 5 :zscale 33 :lambert false) :max_darken 0.5)
     (add_shadow (lamb_shade rmnp-dem-matrix :sunangle 190 :sunaltitude 3 :zscale 33) :max_darken 0.7)
     (add_shadow ambientshadows :max_darken 0.2)
     (plot_3d rmnp-dem-matrix :zscale 15))
 
 (render_camera :theta 315 :zoom 0.8 :phi 30)
-(render_camera :theta 315 :phi 15 :zoom 0.29)
+(render_camera :theta 315 :phi 60 :zoom 0.99)
 
 (render_depth :focus 0.19 :focallength 40 :filename "test-3d.png")
 (rgl-snapshot "/home/joannecheng/test-3d.png" :fmt "png" :top true)
@@ -89,7 +96,6 @@
     (render_camera :theta x :phi 30)
     (rgl-snapshot (str output-location "/theta-" (format "%03d" x) ".png") :fmt "png" :top true)))
 
-
 ;; TODO Render 3D with lots of fancy options to focus on Longs Peak
 
 ;; add_water(detect_water(rmnp_mat), color = "lightblue") %>%
@@ -97,4 +103,3 @@
 ;; add_shadow(lamb_shade(rmnp_mat, sunangle = 190, sunaltitude = 3, zscale = 33), max_darken = 0.5) %>%
 ;; render_camera(theta = 315, phi = 8, zoom = 0.1, fov = 90)
 ;; render_depth(focus = 0.56, focallength = 100)
-
