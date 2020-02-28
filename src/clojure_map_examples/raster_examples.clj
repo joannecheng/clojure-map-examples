@@ -83,7 +83,10 @@
 (render_camera :theta 315 :phi 60 :zoom 0.99)
 
 (render_depth :focus 0.19 :focallength 40 :filename "test-3d.png")
-(rgl-snapshot "/home/joannecheng/test-3d.png" :fmt "png" :top true)
+
+;; Focus longs peak
+(render_camera :theta 35 :zoom 0.15 :phi 8)
+(render_depth :focus 0.31 :focallength 40 :filename (str output-location "/test-3d.png"))
 
 (for [x (range 10 100 5)]
   (render_depth :focus 0.19 :focallength x :filename (str output-location "/focal-" x ".png")))
