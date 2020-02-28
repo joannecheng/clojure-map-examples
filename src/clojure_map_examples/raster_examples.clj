@@ -96,6 +96,11 @@
     (render_camera :theta x :phi 30)
     (rgl-snapshot (str output-location "/theta-" (format "%03d" x) ".png") :fmt "png" :top true)))
 
+(for [x (range 0 90 5)]
+  (do
+    (render_camera :phi x)
+    (rgl-snapshot (str output-location "/phi-" (format "%02d" x) ".png") :fmt "png" :top true)))
+
 ;; TODO Render 3D with lots of fancy options to focus on Longs Peak
 
 ;; add_water(detect_water(rmnp_mat), color = "lightblue") %>%
