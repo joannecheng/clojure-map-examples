@@ -104,7 +104,6 @@
     (render_camera :phi x)
     (rgl-snapshot (str output-location "/phi-" (format "%02d" x) ".png") :fmt "png" :top true)))
 
-;; TODO Render 3D with lots of fancy options to focus on Longs Peak
 
 ;; add_water(detect_water(rmnp_mat), color = "lightblue") %>%
 ;; add_shadow(ray_shade(rmnp_mat, sunangle = 190, sunaltitude = 3, zscale = 33, lambert = FALSE), max_darken = 0.5) %>%
