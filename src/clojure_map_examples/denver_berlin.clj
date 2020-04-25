@@ -2,8 +2,8 @@
   (:require [clojisr.v1.r :as r]
             [clojisr.v1.require :refer [require-r]]))
 
-(require-r '[maps]
-           '[geosphere :refer [greatCircle]])
+(require-r '[maps :as maps]
+           '[geosphere :as geosphere :refer [greatCircle]])
 
 ;; rewriting this so we don't override clojure's very very important
 ;; "map" function
