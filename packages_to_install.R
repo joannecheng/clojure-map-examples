@@ -1,4 +1,4 @@
-install.packages("Rserve", "http://rforge.net")
+install.packages("Rserve")
 
 install.packages("tidyverse", dependencies=TRUE)
 # If you run into problems installing tidyverse on ubuntu, check out the following blog post
