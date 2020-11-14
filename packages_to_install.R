@@ -6,6 +6,14 @@ install.packages("tidyverse", dependencies=TRUE)
 # "the tidyverse package requires the following non-R packages"
 # libcurl4-openssl-dev, libssl-dev, libxml2-dev.
 
+# This was required to use "sf"
+# make sure you install libudunits2 before installing the R package
+# in ubuntu: `sudo apt-get install libudunits2-dev`
+install.packages("udunits2")
+
+# Make sure you have GDAL installed!
+# Mac osx: https://trac.osgeo.org/gdal/wiki/BuildingOnMac
+# Ubuntu: https://mothergeo-py.readthedocs.io/en/latest/development/how-to/gdal-ubuntu-pkg.html
 install.packages("sf")
 install.packages("maps")
 install.packages("raster")
