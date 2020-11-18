@@ -1,4 +1,5 @@
 # Must be at least version 1.8 or else you won't be able to run any examples
+# See clojisr docs: https://github.com/scicloj/clojisr#usage-requirements
 install.packages("Rserve", "https://www.rforge.net/")
 
 # If you run into problems installing tidyverse on ubuntu, check out the following blog post
@@ -15,6 +16,7 @@ install.packages("udunits2")
 # Make sure you have GDAL installed!
 # Mac osx: https://trac.osgeo.org/gdal/wiki/BuildingOnMac
 # Ubuntu: https://mothergeo-py.readthedocs.io/en/latest/development/how-to/gdal-ubuntu-pkg.html
+install.packages("rgdal")
 install.packages("sf")
 install.packages("maps")
 install.packages("raster")
