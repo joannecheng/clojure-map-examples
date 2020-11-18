@@ -12,3 +12,4 @@ pom.xml.asc
 .hg/
 .cpcache
 resources/output
+resources/data_files/new_jersey/NHDWaterbody_2002_shapefile
