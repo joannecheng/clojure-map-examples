@@ -3,12 +3,12 @@
             [clojisr.v1.require :refer [require-r]]
             [clojure.java.io :as io]))
 
-(require-r '[ggplot2 :refer [ggplot aes theme_void ;; general plotting
-                             map_data ;; get base map for area (ex: Colorado, Germany)
-                             coord_sf ;; takes a projection from the first shapefile in plot and applies it to the map
-                             coord_map ;; set map projection
-                             ggsave ;; save plot
-                             geom_sf geom_polygon]] ;; plotting data
+(require-r '[ggplot2 :as ggplot2 :refer [ggplot aes theme_void ;; general plotting
+                                         map_data ;; get base map for area (ex: Colorado, Germany)
+                                         coord_sf ;; takes a projection from the first shapefile in plot and applies it to the map
+                                         coord_map ;; set map projection
+                                         ggsave ;; save plot
+                                         geom_sf geom_polygon]] ;; plotting data
            '[base :as base :refer [$ summary]]
            '[sf :refer [st_bbox st_crop st_read]])
 
@@ -27,13 +27,16 @@
 (def germany-base (map_data "world" :region "Germany"))
 
 ;; Plot Germany
-(-> (ggplot)
-    (r/r+ (geom_polygon :data germany-base (aes :x 'long :y 'lat :group 'group)
-                        :fill "#add8e6" :color "#000000" :size 0.4)
-          (coord_map) ;; projection
-          (theme_void)))
+(def germany-plot
+  (-> (ggplot)
+      (r/r+ (geom_polygon :data germany-base (aes :x 'long :y 'lat :group 'group)
+                          :fill "#90EE90" :color "#000000" :size 0.4)
+            (coord_map) ;; projection
+            (theme_void))))
+germany-plot
+(r/r "X11()")
 
-;; Plot Colorado
+\;; Plot Colorado
 (-> (ggplot) ;; initializes a 'ggplot' object, the 'base' of the graph
     (r/r+ (geom_polygon :data colorado-base
                         ;; passing in the data (collection of lat/long coordinates)

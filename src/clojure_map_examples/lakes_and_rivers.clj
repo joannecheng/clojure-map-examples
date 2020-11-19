@@ -18,38 +18,40 @@
       str
       st_read))
 
-(def lakes
+(def colorado-water
   (-> "data_files/lakes/geo_export_1d691995-66a3-4b66-8aa2-4ae94088e589.shp"
       io/resource
       read-shapefile-resource))
 
-(defn lakes-with-names [df]
+(defn water-with-names [df]
   (r/bra
    df
    (base/! (base/is-na ($ df 'name)))
    nil))
 
-(defn lakes-without-names [df]
+(defn water-without-names [df]
+  ;; Think of ($ dataframe 'col-name) as
+  ;; (get map-object :key-name)
   (r/bra df (base/is-na ($ df 'name)) nil))
 
 (defn state-basemap [state]
   (geom_polygon :data (ggplot2/map_data "state" :region state)
                 (aes :x 'long :y 'lat :group 'group)
-                :fill "#F7F5F088" :color "#333333cc" :size 0.1))
+                :fill "#F7F5F088" :color "#333333" :size 0.2))
 
-(r/r "X11()")
-(r/r "X11(display=\"\", width=12, height=8)")
-#_(r/r "dev.off()")
+#_(r/r "X11()")
+(r/r "X11(display=\"\", width=12, height=10)")
+(r/r "dev.off()")
 
 (-> (ggplot)
     (r/r+ (state-basemap "colorado")
-          (geom_sf :data (lakes-with-names lakes) (aes :geometry 'geometry)
+          (geom_sf :data (water-with-names colorado-water) (aes :geometry 'geometry)
                    :fill "#72bfcf" :size 0.1)
-          (geom_sf :data (lakes-without-names lakes) (aes :geometry 'geometry)
+          (geom_sf :data (water-without-names colorado-water) (aes :geometry 'geometry)
                    :fill "#333333" :size 0.1
                    :color "#274a51")
 
-          (coord_sf #_(:datum sf/st_crs 3857))
+          (coord_sf)
           (theme_void)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -107,7 +109,10 @@
 
 ;; Draw basemap
 (-> (ggplot)
-    (r/r+ (state-basemap "new jersey")
+    (r/r+ #_(state-basemap "new jersey")
+          (geom_polygon :data (ggplot2/map_data "state" :region "new jersey")
+                        (aes :x 'long :y 'lat :group 'group)
+                        :fill "#F7F5F088" :color "#333333" :size 0.2)
           (theme_void)
           (ggplot2/coord_map)))
 
@@ -125,13 +130,13 @@
 ;; Let's look at the projections
 (sf/st_crs new-jersey-water)
 
-(sf/st_crs lakes)
+(sf/st_crs colorado-water)
 ;;    CRS arguments: +proj=longlat +ellps=WGS84 +no_defs
 
 ;; transform new-jersey-water to use the same crs as the
 ;; colorado lakes shapefile
 (def nj-water-transformed
-  (sf/st_transform new-jersey-water (sf/st_crs lakes)))
+  (sf/st_transform new-jersey-water (sf/st_crs colorado-water)))
 
 ;; Fix issue
 (-> (ggplot)
@@ -164,6 +169,7 @@
                      :fill "#72bfcf" :size 0.05)
             (coord_sf)
             (theme_void))))
+water-plot
 
 (def output-location (str (System/getProperty "user.dir") "/resources/output"))
 (ggplot2/ggsave (str output-location "/nj_water.pdf") :plot water-plot :device "pdf")
@@ -185,6 +191,7 @@
                      (aes :geometry 'geometry)
                                         :color "NA"
                      :fill "#72bfcf" :size 0.05)
+            (+ 1 1)
 
             (geom_sf :data (filter-by-ftype nj-water-simplified "Canal/Ditch")
                      (aes :geometry 'geometry)
@@ -214,23 +221,71 @@
 ;;
 
 (r/r->clj (base/colnames new-jersey-water))
+
 (def order-by-shape-area (r/r "function(df) { df[order(-df$SHAPE_Area),] }"))
+;; I used raw R code because it took me a while to figure out how
+;; to get `order` to work. I should have asked for help sorry!
 
-(-> (filter-by-ftype nj-water-transformed "Lake/Pond")
-    ;; nj_water_ordered <- nj_water[order(-nj_water$shape_area),]
-    ;; create a helper function in R because I couldn't figure out
-    ;; how to do this in clojure
-    order-by-shape-area
-    (r/bra (r/colon 0 10) nil)) ;; get first 10
-
-(def nj-water-ordered
+(def nj-lakes-ordered
   (-> (filter-by-ftype nj-water-transformed "Lake/Pond")
-      (r/bra (base/order (base/- ($ nj-water-transformed 'SHAPE_Area))) nil)
+      ;; nj_water_ordered <- nj_water[order(-nj_water$shape_area),]
+      order-by-shape-area
       (r/bra (r/colon 0 10) nil)))
 
-($ nj-water-ordered 'SHAPE_Area)
+($ nj-lakes-ordered 'SHAPE_Area)
 
 
+;; Original code
+;;lakes$centroid <- 
+;;sf::st_centroid(test_lakes$geometry) %>% 
+;;sf::st_geometry()
+;;
+;;padding <- 0.2
+;;par(mar = c(0, 0, 0, 0))
+;;lake_grid_fn <- function(x) {
+;;                             ggplot(test_lakes[x,]) +
+;;                             geom_sf(size=0.1, color="#1D150f", fill="#c1d7d3y") +
+;;                             ggtitle(test_lakes$name[x]) +
+;;                             theme_void() +
+;;                             theme(plot.title = element_text(size=5, hjust=0.5)) +
+;;                             coord_sf(
+;;                                      xlim = c(test_lakes$centroid[[x]][1]-0.13, 
+;;                                                                  test_lakes$centroid[[x]][1]+0.13), 
+;;                                      ylim = c(test_lakes$centroid[[x]][2]-0.08, 
+;;                                                                  test_lakes$centroid[[x]][2]+0.08), 
+;;                                      expand = FALSE
+;;                                      )
+;;                             }
+;;
+;;plot_list <- lapply(X=1:nrow(test_lakes), FUN=lake_grid_fn)
+;;g <- cowplot::plot_grid(plotlist = plot_list, ncol=4)
+;;g
 
+(require-r '[cowplot :as cowplot])
 
+;; find centroids
+($ nj-lakes-ordered 'centroid)
+(def centroids
+  (-> nj-lakes-ordered
+      (sf/st_centroid)
+      (sf/st_geometry)))
+(r/r->clj centroids)
 
+;; save this to a new dataframe
+(def nj-lakes-centroids
+  (base/data-frame :geometry ($ nj-lakes-ordered 'geometry)
+                   :name ($ nj-lakes-ordered 'GNIS_NAME)
+
+                   ;; BUG: can't save this output to the centroid col
+                   :centroid (-> nj-lakes-ordered
+                                 (sf/st_centroid)
+                                 (sf/st_geometry))))
+
+;; BUG: this returns null
+($ nj-lakes-centroids 'centroid)
+
+(def lake_grid_fn (r/r "function(df, x) { ggplot() }"))
+
+(def plot-list (base/lapply :X (r/colon 1 10) :FUN lake_grid_fn))
+
+(cowplot/plot_grid :plotlist plot-list :ncol 4)
