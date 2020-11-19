@@ -207,6 +207,7 @@ water-plot
 
 (ggplot2/ggsave (str output-location "/nj_water_simplified.pdf") :plot simplified-plot :device "pdf")
 
+;; This is where things start getting... weird?
 
 ;; Smoothing out lines
 ;; https://github.com/ateucher/rmapshaper
@@ -284,8 +285,23 @@ water-plot
 ;; BUG: this returns null
 ($ nj-lakes-centroids 'centroid)
 
-(def lake_grid_fn (r/r "function(df, x) { ggplot() }"))
+(def lake_grid_fn (r/r "function(df, centroids) {
+function(x) {
+ggplot(df[x,]) +
+ggtitle(df$GNIS_NAME[x]) +
 
-(def plot-list (base/lapply :X (r/colon 1 10) :FUN lake_grid_fn))
+coord_sf(
+xlim=c(centroids[[x]][1]-0.13, centroids[[x]][1]+0.13),
+ylim=c(centroids[[x]][2]-0.08, centroids[[x]][2]+0.08),
+expand=FALSE
+)
+
+ }
+}
+"))
+
+(def plot-list (base/lapply
+                :X (r/colon 1 10)
+                :FUN (lake_grid_fn nj-lakes-ordered centroids)))
 
 (cowplot/plot_grid :plotlist plot-list :ncol 4)
